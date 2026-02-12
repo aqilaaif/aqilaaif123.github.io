@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -10,7 +10,7 @@
 <style>
 body{
   margin:0;
-  font-family: "Georgia", serif;
+  font-family: Georgia, serif;
   background: linear-gradient(#ffd6e0,#ffeef2);
   overflow-x:hidden;
   text-align:center;
@@ -47,18 +47,15 @@ body{
   transform-origin:top;
   transition:.7s;
 }
-.open .flap{
-  transform:rotateX(180deg);
-}
+.open .flap{ transform:rotateX(180deg); }
+
 .message{
   padding:20px;
   font-family:cursive;
   font-size:18px;
   opacity:0;
 }
-.open .message{
-  opacity:1;
-}
+.open .message{ opacity:1; }
 
 button{
   margin:8px;
@@ -69,7 +66,6 @@ button{
   color:#fff;
 }
 
-/* gallery */
 .gallery img{
   width:90px;
   height:90px;
@@ -120,6 +116,7 @@ button{
 
 <h2>Memory Map</h2>
 <div id="map"></div>
+<button onclick="clearMarkers()">Clear Memories</button>
 
 <audio id="music" loop>
 <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8d7f3c9d8.mp3" type="audio/mp3">
@@ -160,8 +157,7 @@ function generatePoem(){
 /* countdown */
 function updateCountdown(){
   const target=new Date("Feb 14, 2026 00:00:00").getTime();
-  const now=Date.now();
-  const diff=target-now;
+  const diff=target-Date.now();
   if(diff<0) return;
   const d=Math.floor(diff/86400000);
   document.getElementById("countdown").innerText=
@@ -188,10 +184,19 @@ function changeBorder(b){
 const map=L.map('map').setView([-6.2,106.8],11);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-map.on('click',function(e){
-  L.marker(e.latlng).addTo(map)
-  .bindPopup("Our memory ❤️");
+let markers=[];
+
+map.on('click', function(e){
+  const m=L.marker(e.latlng)
+    .addTo(map)
+    .bindPopup("Our memory ❤️");
+  markers.push(m);
 });
+
+function clearMarkers(){
+  markers.forEach(m=>map.removeLayer(m));
+  markers=[];
+}
 </script>
 
 </body>
