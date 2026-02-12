@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Valentine Card</title>
+<title>Valentine Card ❤️</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
 body{
   margin:0;
-  font-family: Georgia, serif;
-  background: linear-gradient(#ffd6e0,#ffeef2);
-  overflow-x:hidden;
+  font-family:Georgia,serif;
+  background:linear-gradient(#ffd6e0,#ffeef2);
   text-align:center;
+  overflow-x:hidden;
 }
 
-/* hearts */
+/* falling hearts */
 .heart{
   position:fixed;
   top:-10px;
@@ -34,9 +34,9 @@ body{
   height:180px;
   margin:30px auto;
   background:#fff;
-  position:relative;
-  border-radius:10px;
+  border-radius:12px;
   cursor:pointer;
+  position:relative;
   box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
 .flap{
@@ -51,12 +51,13 @@ body{
 
 .message{
   padding:20px;
+  opacity:0;
   font-family:cursive;
   font-size:18px;
-  opacity:0;
 }
 .open .message{ opacity:1; }
 
+/* buttons */
 button{
   margin:8px;
   padding:8px 14px;
@@ -64,8 +65,10 @@ button{
   border-radius:8px;
   background:#ff4d6d;
   color:#fff;
+  cursor:pointer;
 }
 
+/* gallery */
 .gallery img{
   width:90px;
   height:90px;
@@ -73,12 +76,15 @@ button{
   border-radius:12px;
   margin:5px;
 }
-
 .border1{border:6px solid pink;}
 .border2{border:6px dashed red;}
 .border3{border:6px double hotpink;}
 
-#map{height:250px;margin:20px;}
+#map{
+  height:260px;
+  margin:20px;
+  border-radius:12px;
+}
 </style>
 </head>
 
@@ -93,7 +99,7 @@ button{
   <div class="message" id="displayMsg"></div>
 </div>
 
-<button onclick="toggleMusic()">🎵 Music</button>
+<button id="musicBtn" onclick="toggleMusic()">🎵 Play Music</button>
 <button onclick="generatePoem()">✨ Secret Poem</button>
 
 <h3 id="countdown"></h3>
@@ -105,9 +111,9 @@ button{
 <br>
 <select onchange="changeBorder(this.value)">
   <option value="">Border Style</option>
-  <option value="border1">Floral Pink</option>
-  <option value="border2">Romantic Dashed</option>
-  <option value="border3">Elegant Double</option>
+  <option value="border1">Pink</option>
+  <option value="border2">Dashed</option>
+  <option value="border3">Double</option>
 </select>
 
 <div id="gallery" class="gallery"></div>
@@ -119,13 +125,13 @@ button{
 <button onclick="clearMarkers()">Clear Memories</button>
 
 <audio id="music" loop>
-<source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8d7f3c9d8.mp3" type="audio/mp3">
+<source src="https://cdn.pixabay.com/audio/2022/03/15/audio_c8d7f3c9d8.mp3">
 </audio>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-/* hearts */
+/* ================= HEARTS ================= */
 for(let i=0;i<30;i++){
   let h=document.createElement("div");
   h.innerHTML="❤️";
@@ -135,39 +141,66 @@ for(let i=0;i<30;i++){
   document.body.appendChild(h);
 }
 
-/* envelope */
+/* ================= MESSAGE ================= */
 const env=document.getElementById("envelope");
+const input=document.getElementById("userMsg");
+const display=document.getElementById("displayMsg");
+
+input.value = localStorage.getItem("loveMsg") || "";
+
 env.onclick=()=>{
-  document.getElementById("displayMsg").innerText=
-    document.getElementById("userMsg").value;
+  const msg=input.value;
+
+  display.innerText=msg;
+  localStorage.setItem("loveMsg",msg);
+
   env.classList.toggle("open");
+
+  /* auto play music when open */
+  if(music.paused){
+    music.play();
+    musicBtn.innerText="⏸ Pause Music";
+  }
 }
 
-/* music */
+/* ================= MUSIC ================= */
+const music=document.getElementById("music");
+const musicBtn=document.getElementById("musicBtn");
+
+music.volume=0.6;
+
 function toggleMusic(){
-  const m=document.getElementById("music");
-  m.paused?m.play():m.pause();
+  if(music.paused){
+    music.play();
+    musicBtn.innerText="⏸ Pause Music";
+  }else{
+    music.pause();
+    musicBtn.innerText="🎵 Play Music";
+  }
 }
 
-/* poem */
+/* ================= POEM ================= */
 function generatePoem(){
-  alert("Your smile lights my darkest nights,\nEvery heartbeat calls your name,\nWith you, love feels endless.");
+  alert("Your smile lights my darkest nights,\nEvery heartbeat whispers your name,\nForever with you ❤️");
 }
 
-/* countdown */
+/* ================= COUNTDOWN ================= */
 function updateCountdown(){
   const target=new Date("Feb 14, 2026 00:00:00").getTime();
   const diff=target-Date.now();
-  if(diff<0) return;
+  if(diff<0)return;
+
   const d=Math.floor(diff/86400000);
+
   document.getElementById("countdown").innerText=
-    "⏳ "+d+" days until Valentine's Day";
+  "⏳ "+d+" days until Valentine's Day";
 }
 setInterval(updateCountdown,1000);
 
-/* gallery */
+/* ================= GALLERY ================= */
 function loadPhotos(e){
   const g=document.getElementById("gallery");
+
   for(let file of e.target.files){
     const img=document.createElement("img");
     img.src=URL.createObjectURL(file);
@@ -176,26 +209,37 @@ function loadPhotos(e){
 }
 
 function changeBorder(b){
-  const g=document.getElementById("gallery");
-  g.className="gallery "+b;
+  document.getElementById("gallery").className="gallery "+b;
 }
 
-/* map */
+/* ================= MAP ================= */
 const map=L.map('map').setView([-6.2,106.8],11);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-let markers=[];
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+.addTo(map);
 
-map.on('click', function(e){
-  const m=L.marker(e.latlng)
-    .addTo(map)
-    .bindPopup("Our memory ❤️");
-  markers.push(m);
+let markers=JSON.parse(localStorage.getItem("markers"))||[];
+
+/* load saved */
+markers.forEach(pos=>{
+  L.marker(pos).addTo(map).bindPopup("Our memory ❤️");
 });
 
+/* add marker */
+map.on('click',function(e){
+  const pos=[e.latlng.lat,e.latlng.lng];
+
+  L.marker(pos).addTo(map).bindPopup("Our memory ❤️");
+
+  markers.push(pos);
+
+  localStorage.setItem("markers",JSON.stringify(markers));
+});
+
+/* clear */
 function clearMarkers(){
-  markers.forEach(m=>map.removeLayer(m));
-  markers=[];
+  localStorage.removeItem("markers");
+  location.reload();
 }
 </script>
 
