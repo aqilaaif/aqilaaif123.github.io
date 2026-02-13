@@ -6,7 +6,11 @@
 
 <title>Valentine Card ❤️</title>
 
+<!-- FONT -->
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+<!-- LEAFLET -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
 body{
@@ -17,7 +21,7 @@ body{
   overflow-x:hidden;
 }
 
-/* ❤️ hearts animation */
+/* ❤️ hearts */
 .heart{
   position:fixed;
   bottom:-20px;
@@ -35,21 +39,20 @@ body{
   margin:30px auto;
   padding:20px;
   border-radius:18px;
-  box-shadow:0 8px 20px rgba(0,0,0,.15);
 }
 
+/* textarea */
 textarea{
   width:100%;
   height:130px;
   border:none;
-  border-radius:12px;
-  padding:12px;
+  border-radius:10px;
+  padding:10px;
   font-family:'Great Vibes',cursive;
   font-size:22px;
-  resize:none;
 }
 
-/* buttons */
+/* button */
 button{
   background:#ff4d6d;
   color:white;
@@ -66,10 +69,18 @@ button{
   grid-template-columns:repeat(3,1fr);
   gap:10px;
   width:90%;
-  margin:20px auto;
+  margin:auto;
 }
 .gallery img{
   width:100%;
+  border-radius:12px;
+}
+
+/* map */
+#map{
+  height:300px;
+  width:90%;
+  margin:20px auto;
   border-radius:12px;
 }
 
@@ -85,7 +96,7 @@ button{
 .poem{
   background:white;
   padding:20px;
-  border-radius:14px;
+  border-radius:12px;
   max-width:320px;
 }
 </style>
@@ -95,31 +106,42 @@ button{
 
 <h1>💌 Valentine Card</h1>
 
+<!-- CARD -->
 <div class="card">
-<textarea id="message" readonly></textarea><br>
+
+<textarea id="message"></textarea><br>
 
 <button onclick="toggleMusic()">🎵 Music</button>
 <button onclick="showPoem()">✨ Secret Poem</button>
 
 <h3 id="countdown"></h3>
+
 </div>
 
-<!-- MUSIC (nama file HARUS valentine.mp3) -->
-<audio id="bgMusic" src="valentine.mp3" loop></audio>
+<!-- MUSIC -->
+<audio id="music" src="valentine.mp3"></audio>
 
+
+<!-- GALLERY (pakai .jpeg sesuai file lu) -->
 <h2>Photo Gallery</h2>
-
 <div class="gallery">
-<img src="1.jpg">
-<img src="2.jpg">
-<img src="3.jpg">
-<img src="4.jpg">
-<img src="5.jpg">
-<img src="6.jpg">
-<img src="7.jpg">
-<img src="8.jpg">
-<img src="9.jpg">
+  <img src="1.jpeg">
+  <img src="2.jpeg">
+  <img src="3.jpeg">
+  <img src="4.jpeg">
+  <img src="5.jpeg">
+  <img src="6.jpeg">
+  <img src="7.jpeg">
+  <img src="8.jpeg">
+  <img src="9.jpeg">
 </div>
+
+
+<!-- MAP -->
+<h2>Memory Map</h2>
+<button onclick="clearMarkers()">Clear Memories</button>
+<div id="map"></div>
+
 
 <!-- POEM POPUP -->
 <div id="poemBox">
@@ -129,9 +151,11 @@ button{
   </div>
 </div>
 
-<script>
 
-/* ❤️ hearts */
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+/* ❤️ hearts animation */
 setInterval(()=>{
   const h=document.createElement("div");
   h.className="heart";
@@ -142,55 +166,78 @@ setInterval(()=>{
 },300);
 
 
-/* ======================
-   VALENTINE MESSAGE
-====================== */
-const valentineMessage =
+/* =========================
+   MESSAGE (auto isi)
+========================= */
+const defaultMessage =
 `valentine kali ini masih ditemani jarak tapi rindu Abang nggak ada nggak pernah berkurang justru makin jauh mungkin terasa betapa bahagia nya adeeeeeeeeeeee buat abanggggggg 🤍🤍🤍`;
 
-document.getElementById("message").value = valentineMessage;
+const msg=document.getElementById("message");
+
+msg.value=localStorage.getItem("msg")||defaultMessage;
+msg.oninput=()=>localStorage.setItem("msg",msg.value);
 
 
-/* ======================
-   SECRET POEM
-====================== */
+/* =========================
+   POEM
+========================= */
 const poemText =
 `adeeeee mungkin nggak selalu lihat seberapa besar rasa ini, karena jarak bikin semuanya terasa sunyi. Tapi di balik diamnya abanggggg, ada doa yang nggak pernah putus dan rindu yang nggak pernah habis.
 
-Setiap hari, hati abanggggg tetap milih adeeeee, walau nggak bisa selalu ada di samping adeeeee. Jarak cuma memisahkan langkah, bukan perasaan.
+Setiap hari, hati abanggggg tetap milih adeeeee. Jarak cuma memisahkan langkah, bukan perasaan.
 
-Kalau suatu hari adeeeee merasa sendiri, ingat ya… di tempat lain ada abanggggg yang selalu menyebut nama adeeeee dalam harap dan doa. 🤍🤍🤍`;
+Kalau suatu hari adeeeee merasa sendiri, ingat ya… abanggggg selalu nyebut nama adeeeee dalam doa. 🤍🤍🤍`;
 
 function showPoem(){
-  document.getElementById("poemText").innerText = poemText;
-  document.getElementById("poemBox").style.display="flex";
+  document.getElementById("poemText").innerText=poemText;
+  poemBox.style.display="flex";
 }
 function closePoem(){
-  document.getElementById("poemBox").style.display="none";
+  poemBox.style.display="none";
 }
 
 
-/* ======================
+/* =========================
    MUSIC
-====================== */
-const music=document.getElementById("bgMusic");
-
+========================= */
+const music=document.getElementById("music");
 function toggleMusic(){
-  music.paused ? music.play() : music.pause();
+  music.paused?music.play():music.pause();
 }
 
 
-/* ======================
+/* =========================
    COUNTDOWN
-====================== */
+========================= */
 const target=new Date(new Date().getFullYear(),1,14);
-
 setInterval(()=>{
   const d=Math.ceil((target-new Date())/86400000);
-  document.getElementById("countdown").innerText =
-  d+" days until Valentine's Day ❤️";
+  countdown.innerText=d+" days until Valentine's Day ❤️";
 },1000);
 
+
+/* =========================
+   MAP + SAVE MARKER
+========================= */
+const map=L.map('map').setView([-6.2,106.8],5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+let markers=JSON.parse(localStorage.getItem("markers")||"[]");
+
+markers.forEach(m=>L.marker(m).addTo(map));
+
+map.on("click",e=>{
+  const c=[e.latlng.lat,e.latlng.lng];
+  markers.push(c);
+  localStorage.setItem("markers",JSON.stringify(markers));
+  L.marker(c).addTo(map);
+});
+
+function clearMarkers(){
+  localStorage.removeItem("markers");
+  location.reload();
+}
 </script>
 
 </body>
