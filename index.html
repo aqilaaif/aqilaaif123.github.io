@@ -1,60 +1,81 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Valentine Card ❤️</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
 <style>
 body{
-  font-family: Arial, sans-serif;
-  background: linear-gradient(#ffe6ec,#fff);
+  margin:0;
+  font-family:sans-serif;
   text-align:center;
-  padding:20px;
+  background:linear-gradient(135deg,#ffd6e0,#fff);
+  overflow-x:hidden;
+}
+
+/* hearts */
+.heart{
+  position:fixed;
+  bottom:-20px;
+  font-size:20px;
+  animation:fall 6s linear infinite;
+}
+@keyframes fall{
+  to{transform:translateY(-110vh);opacity:0;}
 }
 
 /* card */
 .card{
-  background:#ffd1dc;
-  padding:25px;
-  border-radius:20px;
-  max-width:420px;
-  margin:auto;
-  box-shadow:0 5px 15px rgba(0,0,0,.1);
+  background:#ffb6c1;
+  width:320px;
+  margin:30px auto;
+  padding:20px;
+  border-radius:16px;
 }
 
 textarea{
   width:100%;
-  height:130px;
-  border:none;
-  border-radius:12px;
-  padding:10px;
-  resize:none;
-}
-
-/* button */
-button{
-  margin:8px;
-  padding:10px 18px;
+  height:120px;
   border:none;
   border-radius:10px;
-  background:#ff5c8a;
+  padding:10px;
+  font-family:'Great Vibes',cursive;
+  font-size:22px;
+}
+
+button{
+  background:#ff4d6d;
   color:white;
-  cursor:pointer;
+  border:none;
+  padding:10px 18px;
+  margin:6px;
+  border-radius:8px;
 }
 
 /* gallery */
 .gallery{
-  margin-top:30px;
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:10px;
+  width:90%;
+  margin:auto;
 }
-
 .gallery img{
   width:100%;
-  border-radius:10px;
+  border-radius:12px;
+}
+
+/* map */
+#map{
+  height:300px;
+  width:90%;
+  margin:20px auto;
+  border-radius:12px;
 }
 
 /* popup */
@@ -62,15 +83,14 @@ button{
   display:none;
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.5);
+  background:rgba(0,0,0,.6);
   justify-content:center;
   align-items:center;
 }
-
 .poem{
   background:white;
   padding:20px;
-  border-radius:15px;
+  border-radius:12px;
   max-width:300px;
 }
 </style>
@@ -78,25 +98,36 @@ button{
 
 <body>
 
-<h2>❤️ Valentine Card</h2>
+<h1>💌 Valentine Card</h1>
 
 <div class="card">
-
-<textarea id="message" readonly></textarea>
-
-<br>
+<textarea id="message"></textarea><br>
 
 <button onclick="toggleMusic()">🎵 Music</button>
 <button onclick="showPoem()">✨ Secret Poem</button>
 
 <h3 id="countdown"></h3>
-
 </div>
 
-<!-- AUDIO -->
 <audio id="bgMusic" src="music.mp3"></audio>
 
-<!-- POEM POPUP -->
+<h2>Photo Gallery</h2>
+<div class="gallery">
+<img src="foto1.jpg">
+<img src="foto2.jpg">
+<img src="foto3.jpg">
+<img src="foto4.jpg">
+<img src="foto5.jpg">
+<img src="foto6.jpg">
+<img src="foto7.jpg">
+<img src="foto8.jpg">
+<img src="foto9.jpg">
+</div>
+
+<h2>Memory Map</h2>
+<button onclick="clearMarkers()">Clear Memories</button>
+<div id="map"></div>
+
 <div id="poemBox">
   <div class="poem">
     <p id="poemText"></p>
@@ -104,38 +135,30 @@ button{
   </div>
 </div>
 
-<h2>Photo Gallery</h2>
-
-<div class="gallery">
-  <img src="foto1.jpg">
-  <img src="foto2.jpg">
-  <img src="foto3.jpg">
-  <img src="foto4.jpg">
-  <img src="foto5.jpg">
-  <img src="foto6.jpg">
-  <img src="foto7.jpg">
-  <img src="foto8.jpg">
-  <img src="foto9.jpg">
-</div>
-
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
+/* hearts */
+setInterval(()=>{
+  const h=document.createElement("div");
+  h.className="heart";
+  h.innerHTML="❤️";
+  h.style.left=Math.random()*100+"vw";
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(),6000);
+},300);
 
-/* =========================
-   PESAN VALENTINE (FIX)
-========================= */
-
-const valentineMessage =
+/* MESSAGE */
+const messageText =
 `valentine kali ini masih ditemani jarak tapi rindu Abang nggak ada nggak pernah berkurang justru makin jauh mungkin terasa betapa bahagia nya adeeeeeeeeeeee buat abanggggggg 🤍🤍🤍`;
 
-document.getElementById("message").value = valentineMessage;
+const msg=document.getElementById("message");
+msg.value=localStorage.getItem("msg")||messageText;
 
+msg.oninput=()=>localStorage.setItem("msg",msg.value);
 
-/* =========================
-   SECRET POEM
-========================= */
-
-const poem =
+/* POEM */
+const poemText =
 `adeeeee mungkin nggak selalu lihat seberapa besar rasa ini, karena jarak bikin semuanya terasa sunyi. Tapi di balik diamnya abanggggg, ada doa yang nggak pernah putus dan rindu yang nggak pernah habis.
 
 Setiap hari, hati abanggggg tetap milih adeeeee, walau nggak bisa selalu ada di samping adeeeee. Jarak cuma memisahkan langkah, bukan perasaan.
@@ -143,45 +166,45 @@ Setiap hari, hati abanggggg tetap milih adeeeee, walau nggak bisa selalu ada di 
 Kalau suatu hari adeeeee merasa sendiri, ingat ya… di tempat lain ada abanggggg yang selalu menyebut nama adeeeee dalam harap dan doa. 🤍🤍🤍`;
 
 function showPoem(){
-  document.getElementById("poemText").innerText = poem;
-  document.getElementById("poemBox").style.display="flex";
+  document.getElementById("poemText").innerText=poemText;
+  poemBox.style.display="flex";
 }
-
 function closePoem(){
-  document.getElementById("poemBox").style.display="none";
+  poemBox.style.display="none";
 }
 
-
-/* =========================
-   MUSIC
-========================= */
-
-const music = document.getElementById("bgMusic");
-
+/* MUSIC */
+const music=document.getElementById("bgMusic");
 function toggleMusic(){
-  if(music.paused){
-    music.play();
-  }else{
-    music.pause();
-  }
+  music.paused?music.play():music.pause();
 }
 
+/* COUNTDOWN */
+const target=new Date(new Date().getFullYear(),1,14);
+setInterval(()=>{
+  const d=Math.ceil((target-new Date())/86400000);
+  countdown.innerText=d+" days until Valentine's Day ❤️";
+},1000);
 
-/* =========================
-   COUNTDOWN
-========================= */
+/* MAP */
+const map=L.map('map').setView([-6.2,106.8],5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-function updateCountdown(){
-  const today = new Date();
-  const target = new Date(today.getFullYear(),1,14);
-  const diff = Math.ceil((target - today)/86400000);
+let markers=JSON.parse(localStorage.getItem("markers")||"[]");
 
-  document.getElementById("countdown").innerText =
-    diff + " days until Valentine's Day ❤️";
+markers.forEach(m=>L.marker(m).addTo(map));
+
+map.on("click",e=>{
+  const c=[e.latlng.lat,e.latlng.lng];
+  markers.push(c);
+  localStorage.setItem("markers",JSON.stringify(markers));
+  L.marker(c).addTo(map);
+});
+
+function clearMarkers(){
+  localStorage.removeItem("markers");
+  location.reload();
 }
-
-updateCountdown();
-
 </script>
 
 </body>
