@@ -1,201 +1,219 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
 <title>Valentine Card ❤️</title>
 
+<!-- FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+<!-- LEAFLET MAP -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
 body{
-  font-family: Arial;
-  background:#ffe6ec;
-  text-align:center;
   margin:0;
+  font-family:sans-serif;
+  text-align:center;
+  background:linear-gradient(135deg,#ffd6e0,#fff);
   overflow-x:hidden;
 }
 
-h1{margin-top:30px}
+/* hearts animation */
+.heart{
+  position:fixed;
+  bottom:-20px;
+  font-size:20px;
+  animation:fall 6s linear infinite;
+}
+@keyframes fall{
+  to{transform:translateY(-110vh);opacity:0;}
+}
 
-.btn{
-  background:#ff5c8a;
-  color:white;
-  padding:10px 18px;
-  border:none;
-  border-radius:8px;
-  margin:6px;
+/* envelope */
+.envelope{
+  width:320px;
+  height:200px;
+  margin:40px auto;
+  background:#ffb6c1;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   cursor:pointer;
+  transition:.4s;
+}
+.envelope.open{
+  height:320px;
 }
 
 textarea{
   width:80%;
-  height:100px;
-  border-radius:10px;
+  height:80px;
+  border:none;
+  border-radius:8px;
   padding:10px;
 }
 
+.message{
+  font-family:'Great Vibes',cursive;
+  font-size:28px;
+  margin-top:10px;
+}
+
+/* buttons */
+button{
+  background:#ff4d6d;
+  color:white;
+  border:none;
+  padding:10px 18px;
+  margin:8px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* gallery */
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  width:90%;
+  margin:auto;
+}
 .gallery img{
-  width:100px;
-  margin:6px;
-  border-radius:10px;
+  width:100%;
+  border-radius:12px;
 }
 
+/* map */
 #map{
-  height:350px;
-  margin:20px;
+  height:300px;
+  width:90%;
+  margin:20px auto;
   border-radius:12px;
-}
-
-.heart{
-  position:fixed;
-  top:-10px;
-  color:#ff5c8a;
-  animation:fall 6s linear infinite;
-}
-
-@keyframes fall{
-  to{transform:translateY(110vh)}
-}
-
-.popup{
-  display:none;
-  position:fixed;
-  top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 0 20px rgba(0,0,0,.3);
 }
 </style>
 </head>
 
 <body>
 
-<h1>💖 Valentine Greeting 💖</h1>
+<h1>💌 Valentine Card</h1>
 
-<button class="btn" onclick="toggleMusic(event)">🎵 Play Music</button>
-
-<label class="btn">
-Change Song
-<input type="file" id="musicUpload" accept="audio/*" hidden>
-</label>
-
-<button class="btn" onclick="showPoem()">✨ Secret Poem</button>
-
-<audio id="music" src="music.mp3"></audio>
-
-<br><br>
-
-<h2>Your Message</h2>
-<textarea id="msg" placeholder="Tulis pesan cinta..."></textarea>
-
-<h2>Photo Gallery</h2>
-<input type="file" id="photos" multiple accept="image/*">
-<div class="gallery" id="gallery"></div>
-
-<h2>Memory Map</h2>
-<div id="map"></div>
-<button class="btn" onclick="clearMarkers()">Clear Memories</button>
-
-<!-- poem popup -->
-<div class="popup" id="poem">
-<p>
-Aku mungkin jauh,<br>
-tapi hatiku selalu di kamu.<br><br>
-Setiap hari nunggu ketemu,<br>
-karena kamu rumahku ❤️
-</p>
-<button onclick="closePoem()">Close</button>
+<!-- ENVELOPE -->
+<div class="envelope" onclick="openEnvelope(this)">
+  <div>
+    <textarea id="msg" placeholder="Type your message..."></textarea>
+    <div id="preview" class="message"></div>
+  </div>
 </div>
 
+<!-- BUTTONS -->
+<button onclick="toggleMusic()">🎵 Music</button>
+<button onclick="poem()">✨ Secret Poem</button>
+
+<h2 id="countdown"></h2>
+
+<!-- AUDIO -->
+<audio id="music" src="valentine.mp3"></audio>
+
+<!-- GALLERY -->
+<h2>Photo Gallery</h2>
+<div class="gallery">
+  <img src="1.jpeg">
+  <img src="2.jpeg">
+  <img src="3.jpeg">
+  <img src="4.jpeg">
+  <img src="5.jpeg">
+  <img src="6.jpeg">
+  <img src="7.jpeg">
+  <img src="8.jpeg">
+  <img src="9.jpeg">
+</div>
+
+<!-- MAP -->
+<h2>Memory Map</h2>
+<button onclick="clearMarkers()">Clear Memories</button>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script>
-/* ================= MUSIC ================= */
-const music=document.getElementById("music");
-function toggleMusic(e){
- if(music.paused){
-   music.play();
-   e.target.innerText="⏸ Pause Music";
- }else{
-   music.pause();
-   e.target.innerText="🎵 Play Music";
- }
+/* hearts */
+setInterval(()=>{
+  const h=document.createElement("div");
+  h.className="heart";
+  h.innerHTML="❤️";
+  h.style.left=Math.random()*100+"vw";
+  document.body.appendChild(h);
+  setTimeout(()=>h.remove(),6000);
+},300);
+
+/* envelope */
+function openEnvelope(el){
+  el.classList.toggle("open");
 }
 
-document.getElementById("musicUpload").addEventListener("change",e=>{
- const file=e.target.files[0];
- if(file){
-   music.src=URL.createObjectURL(file);
-   music.play();
- }
-});
-
-/* ================= MESSAGE SAVE ================= */
 const msg=document.getElementById("msg");
-msg.value=localStorage.getItem("msg")||"";
-msg.oninput=()=>localStorage.setItem("msg",msg.value);
+const preview=document.getElementById("preview");
 
-/* ================= GALLERY ================= */
-const gallery=document.getElementById("gallery");
-document.getElementById("photos").onchange=e=>{
- gallery.innerHTML="";
- for(let f of e.target.files){
-  const img=document.createElement("img");
-  img.src=URL.createObjectURL(f);
-  gallery.appendChild(img);
- }
+msg.value=localStorage.getItem("msg")||"";
+preview.innerText=msg.value;
+
+msg.oninput=()=>{
+  preview.innerText=msg.value;
+  localStorage.setItem("msg",msg.value);
 };
 
-/* ================= MAP ================= */
-const map=L.map('map').setView([-6.2,106.8],10);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-.addTo(map);
-
-let markers=[];
-
-const saved=JSON.parse(localStorage.getItem("markers")||"[]");
-
-saved.forEach(c=>{
- const m=L.marker(c).addTo(map);
- markers.push(m);
-});
-
-map.on('click',e=>{
- const m=L.marker(e.latlng).addTo(map);
- markers.push(m);
- saveMarkers();
-});
-
-function saveMarkers(){
- const arr=markers.map(m=>m.getLatLng());
- localStorage.setItem("markers",JSON.stringify(arr));
+/* music */
+const music=document.getElementById("music");
+function toggleMusic(){
+  music.paused?music.play():music.pause();
 }
+
+/* poem */
+function poem(){
+  const p=[
+    "Every beat of my heart whispers your name ❤️",
+    "You are my today and all of my tomorrows 💕",
+    "With you, every place feels like home 🌹"
+  ];
+  alert(p[Math.floor(Math.random()*p.length)]);
+}
+
+/* countdown */
+const target=new Date(new Date().getFullYear(),1,14);
+setInterval(()=>{
+  const d=Math.ceil((target-new Date())/86400000);
+  document.getElementById("countdown").innerText=
+  d+" days until Valentine's Day";
+},1000);
+
+/* map */
+const map=L.map('map').setView([-6.2,106.8],5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'© OpenStreetMap'
+}).addTo(map);
+
+let markers=JSON.parse(localStorage.getItem("markers")||"[]");
+
+markers.forEach(m=>{
+  L.marker(m).addTo(map);
+});
+
+map.on("click",e=>{
+  const c=[e.latlng.lat,e.latlng.lng];
+  markers.push(c);
+  localStorage.setItem("markers",JSON.stringify(markers));
+  L.marker(c).addTo(map);
+});
 
 function clearMarkers(){
- markers.forEach(m=>map.removeLayer(m));
- markers=[];
- saveMarkers();
+  localStorage.removeItem("markers");
+  location.reload();
 }
-
-/* ================= POEM ================= */
-function showPoem(){
- document.getElementById("poem").style.display="block";
-}
-function closePoem(){
- document.getElementById("poem").style.display="none";
-}
-
-/* ================= HEART EFFECT ================= */
-setInterval(()=>{
- const h=document.createElement("div");
- h.className="heart";
- h.innerText="❤️";
- h.style.left=Math.random()*100+"vw";
- document.body.appendChild(h);
- setTimeout(()=>h.remove(),6000);
-},500);
 </script>
 
 </body>
