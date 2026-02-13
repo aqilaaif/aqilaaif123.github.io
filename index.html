@@ -32,7 +32,7 @@ body{
 /* card */
 .card{
   background:#ffb6c1;
-  width:320px;
+  width:330px;
   margin:30px auto;
   padding:20px;
   border-radius:16px;
@@ -40,7 +40,7 @@ body{
 
 textarea{
   width:100%;
-  height:120px;
+  height:130px;
   border:none;
   border-radius:10px;
   padding:10px;
@@ -78,7 +78,7 @@ button{
   border-radius:12px;
 }
 
-/* popup */
+/* poem popup */
 #poemBox{
   display:none;
   position:fixed;
@@ -102,13 +102,12 @@ button{
 
 <div class="card">
 <textarea id="message"></textarea><br>
-
 <button onclick="toggleMusic()">🎵 Music</button>
 <button onclick="showPoem()">✨ Secret Poem</button>
-
 <h3 id="countdown"></h3>
 </div>
 
+<!-- AUDIO -->
 <audio id="bgMusic" src="music.mp3"></audio>
 
 <h2>Photo Gallery</h2>
@@ -128,6 +127,7 @@ button{
 <button onclick="clearMarkers()">Clear Memories</button>
 <div id="map"></div>
 
+<!-- poem popup -->
 <div id="poemBox">
   <div class="poem">
     <p id="poemText"></p>
@@ -149,12 +149,11 @@ setInterval(()=>{
 },300);
 
 /* MESSAGE */
-const messageText =
+const defaultMessage =
 `valentine kali ini masih ditemani jarak tapi rindu Abang nggak ada nggak pernah berkurang justru makin jauh mungkin terasa betapa bahagia nya adeeeeeeeeeeee buat abanggggggg 🤍🤍🤍`;
 
 const msg=document.getElementById("message");
-msg.value=localStorage.getItem("msg")||messageText;
-
+msg.value=localStorage.getItem("msg")||defaultMessage;
 msg.oninput=()=>localStorage.setItem("msg",msg.value);
 
 /* POEM */
@@ -191,7 +190,6 @@ const map=L.map('map').setView([-6.2,106.8],5);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 let markers=JSON.parse(localStorage.getItem("markers")||"[]");
-
 markers.forEach(m=>L.marker(m).addTo(map));
 
 map.on("click",e=>{
