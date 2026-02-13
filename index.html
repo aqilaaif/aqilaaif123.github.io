@@ -1,219 +1,187 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
 <title>Valentine Card ❤️</title>
 
-<!-- FONT -->
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-
-<!-- LEAFLET MAP -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-
 <style>
 body{
-  margin:0;
-  font-family:sans-serif;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(#ffe6ec,#fff);
   text-align:center;
-  background:linear-gradient(135deg,#ffd6e0,#fff);
-  overflow-x:hidden;
+  padding:20px;
 }
 
-/* hearts animation */
-.heart{
-  position:fixed;
-  bottom:-20px;
-  font-size:20px;
-  animation:fall 6s linear infinite;
-}
-@keyframes fall{
-  to{transform:translateY(-110vh);opacity:0;}
-}
-
-/* envelope */
-.envelope{
-  width:320px;
-  height:200px;
-  margin:40px auto;
-  background:#ffb6c1;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  transition:.4s;
-}
-.envelope.open{
-  height:320px;
+/* card */
+.card{
+  background:#ffd1dc;
+  padding:25px;
+  border-radius:20px;
+  max-width:420px;
+  margin:auto;
+  box-shadow:0 5px 15px rgba(0,0,0,.1);
 }
 
 textarea{
-  width:80%;
-  height:80px;
+  width:100%;
+  height:130px;
   border:none;
-  border-radius:8px;
+  border-radius:12px;
   padding:10px;
+  resize:none;
 }
 
-.message{
-  font-family:'Great Vibes',cursive;
-  font-size:28px;
-  margin-top:10px;
-}
-
-/* buttons */
+/* button */
 button{
-  background:#ff4d6d;
-  color:white;
-  border:none;
-  padding:10px 18px;
   margin:8px;
-  border-radius:8px;
+  padding:10px 18px;
+  border:none;
+  border-radius:10px;
+  background:#ff5c8a;
+  color:white;
   cursor:pointer;
 }
 
 /* gallery */
 .gallery{
+  margin-top:30px;
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:10px;
-  width:90%;
-  margin:auto;
-}
-.gallery img{
-  width:100%;
-  border-radius:12px;
 }
 
-/* map */
-#map{
-  height:300px;
-  width:90%;
-  margin:20px auto;
-  border-radius:12px;
+.gallery img{
+  width:100%;
+  border-radius:10px;
+}
+
+/* popup */
+#poemBox{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+  justify-content:center;
+  align-items:center;
+}
+
+.poem{
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  max-width:300px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>💌 Valentine Card</h1>
+<h2>❤️ Valentine Card</h2>
 
-<!-- ENVELOPE -->
-<div class="envelope" onclick="openEnvelope(this)">
-  <div>
-    <textarea id="msg" placeholder="Type your message..."></textarea>
-    <div id="preview" class="message"></div>
+<div class="card">
+
+<textarea id="message" readonly></textarea>
+
+<br>
+
+<button onclick="toggleMusic()">🎵 Music</button>
+<button onclick="showPoem()">✨ Secret Poem</button>
+
+<h3 id="countdown"></h3>
+
+</div>
+
+<!-- AUDIO -->
+<audio id="bgMusic" src="music.mp3"></audio>
+
+<!-- POEM POPUP -->
+<div id="poemBox">
+  <div class="poem">
+    <p id="poemText"></p>
+    <button onclick="closePoem()">Tutup</button>
   </div>
 </div>
 
-<!-- BUTTONS -->
-<button onclick="toggleMusic()">🎵 Music</button>
-<button onclick="poem()">✨ Secret Poem</button>
-
-<h2 id="countdown"></h2>
-
-<!-- AUDIO -->
-<audio id="music" src="valentine.mp3"></audio>
-
-<!-- GALLERY -->
 <h2>Photo Gallery</h2>
+
 <div class="gallery">
-  <img src="1.jpeg">
-  <img src="2.jpeg">
-  <img src="3.jpeg">
-  <img src="4.jpeg">
-  <img src="5.jpeg">
-  <img src="6.jpeg">
-  <img src="7.jpeg">
-  <img src="8.jpeg">
-  <img src="9.jpeg">
+  <img src="foto1.jpg">
+  <img src="foto2.jpg">
+  <img src="foto3.jpg">
+  <img src="foto4.jpg">
+  <img src="foto5.jpg">
+  <img src="foto6.jpg">
+  <img src="foto7.jpg">
+  <img src="foto8.jpg">
+  <img src="foto9.jpg">
 </div>
 
-<!-- MAP -->
-<h2>Memory Map</h2>
-<button onclick="clearMarkers()">Clear Memories</button>
-<div id="map"></div>
-
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
-/* hearts */
-setInterval(()=>{
-  const h=document.createElement("div");
-  h.className="heart";
-  h.innerHTML="❤️";
-  h.style.left=Math.random()*100+"vw";
-  document.body.appendChild(h);
-  setTimeout(()=>h.remove(),6000);
-},300);
 
-/* envelope */
-function openEnvelope(el){
-  el.classList.toggle("open");
+/* =========================
+   PESAN VALENTINE (FIX)
+========================= */
+
+const valentineMessage =
+`valentine kali ini masih ditemani jarak tapi rindu Abang nggak ada nggak pernah berkurang justru makin jauh mungkin terasa betapa bahagia nya adeeeeeeeeeeee buat abanggggggg 🤍🤍🤍`;
+
+document.getElementById("message").value = valentineMessage;
+
+
+/* =========================
+   SECRET POEM
+========================= */
+
+const poem =
+`adeeeee mungkin nggak selalu lihat seberapa besar rasa ini, karena jarak bikin semuanya terasa sunyi. Tapi di balik diamnya abanggggg, ada doa yang nggak pernah putus dan rindu yang nggak pernah habis.
+
+Setiap hari, hati abanggggg tetap milih adeeeee, walau nggak bisa selalu ada di samping adeeeee. Jarak cuma memisahkan langkah, bukan perasaan.
+
+Kalau suatu hari adeeeee merasa sendiri, ingat ya… di tempat lain ada abanggggg yang selalu menyebut nama adeeeee dalam harap dan doa. 🤍🤍🤍`;
+
+function showPoem(){
+  document.getElementById("poemText").innerText = poem;
+  document.getElementById("poemBox").style.display="flex";
 }
 
-const msg=document.getElementById("msg");
-const preview=document.getElementById("preview");
+function closePoem(){
+  document.getElementById("poemBox").style.display="none";
+}
 
-msg.value=localStorage.getItem("msg")||"";
-preview.innerText=msg.value;
 
-msg.oninput=()=>{
-  preview.innerText=msg.value;
-  localStorage.setItem("msg",msg.value);
-};
+/* =========================
+   MUSIC
+========================= */
 
-/* music */
-const music=document.getElementById("music");
+const music = document.getElementById("bgMusic");
+
 function toggleMusic(){
-  music.paused?music.play():music.pause();
+  if(music.paused){
+    music.play();
+  }else{
+    music.pause();
+  }
 }
 
-/* poem */
-function poem(){
-  const p=[
-    "Every beat of my heart whispers your name ❤️",
-    "You are my today and all of my tomorrows 💕",
-    "With you, every place feels like home 🌹"
-  ];
-  alert(p[Math.floor(Math.random()*p.length)]);
+
+/* =========================
+   COUNTDOWN
+========================= */
+
+function updateCountdown(){
+  const today = new Date();
+  const target = new Date(today.getFullYear(),1,14);
+  const diff = Math.ceil((target - today)/86400000);
+
+  document.getElementById("countdown").innerText =
+    diff + " days until Valentine's Day ❤️";
 }
 
-/* countdown */
-const target=new Date(new Date().getFullYear(),1,14);
-setInterval(()=>{
-  const d=Math.ceil((target-new Date())/86400000);
-  document.getElementById("countdown").innerText=
-  d+" days until Valentine's Day";
-},1000);
+updateCountdown();
 
-/* map */
-const map=L.map('map').setView([-6.2,106.8],5);
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  attribution:'© OpenStreetMap'
-}).addTo(map);
-
-let markers=JSON.parse(localStorage.getItem("markers")||"[]");
-
-markers.forEach(m=>{
-  L.marker(m).addTo(map);
-});
-
-map.on("click",e=>{
-  const c=[e.latlng.lat,e.latlng.lng];
-  markers.push(c);
-  localStorage.setItem("markers",JSON.stringify(markers));
-  L.marker(c).addTo(map);
-});
-
-function clearMarkers(){
-  localStorage.removeItem("markers");
-  location.reload();
-}
 </script>
 
 </body>
